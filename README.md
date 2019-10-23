@@ -10,7 +10,7 @@ So that I can more easily decide which one to adopt.
 npm install
 ```
 
-## Usage
+## How to start
 
 ```bash
 npm start
