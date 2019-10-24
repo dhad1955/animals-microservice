@@ -5,7 +5,10 @@ const http = require('./Util/Http');
 const BASE_URL = 'https://apigateway.test.lifeworks.com/rescue-shelter-api';
 
 const _decorateAnimalWithDescriptiveFields = function(animalType, animal) {
+
     return {
+        forename: animal.forename,
+        surname: animal.surname,
         animalType: animalType,
         fullName: `${animal.forename} ${animal.surname}`,
         ageInMonths: Util.getAnimalAgeInMonths(animal.dateOfBirth),
@@ -56,7 +59,6 @@ module.exports = {
             sorted.forEach(s => {
                 output = output.concat(_.sortBy(grouped[s], 'ageInMonths').reverse());
             });
-
 
             return {
                 success: true,
