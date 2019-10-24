@@ -4,19 +4,24 @@ const http = require('./Util/Http');
 
 const BASE_URL = 'https://apigateway.test.lifeworks.com/rescue-shelter-api';
 
-const mapWithAge = function(animals) {
-    return _.map(animals, o => {
-        return Object.assign(o,
-            {
-                ageInMonths: Util.getAnimalAgeInMonths(o.dateOfBirth),
-                age: Util.getAnimalAgeAsString(o.dateOfBirth)
-            });
-    });
+const _decorateAnimalWithDescriptiveFields = function(animalType, animal) {
+    return {
+        animalType: animalType,
+        fullName: `${animal.forename} ${animal.surname}`,
+        ageInMonths: Util.getAnimalAgeInMonths(animal.dateOfBirth),
+        age: Util.getAnimalAgeAsString(animal.dateOfBirth),
+        image: animal.image.url
+    };
+};
+
+const _mapDescriptiveFields = function(animalType, animals) {
+    return _.map(animals, o => _decorateAnimalWithDescriptiveFields(animalType, o));
 };
 
 module.exports = {
     BASE_URL,
-
+    _decorateAnimalWithDescriptiveFields,
+    _mapDescriptiveFields,
     /**
      * Get Cats
      * @returns {Promise<*>}
@@ -33,7 +38,7 @@ module.exports = {
             }
 
             // assign ageInMonths and age
-            const mapped = mapWithAge(cats.body.body);
+            const mapped = _mapDescriptiveFields('cat', cats.body.body);
 
             // sort order for grouping
             const SORT_ORDER = [
@@ -47,11 +52,11 @@ module.exports = {
                 .orderBy([key => SORT_ORDER.indexOf(key) < 0 ? Number.MAX_VALUE : SORT_ORDER.indexOf(key)], ['asc']).value();
 
             // morph into array, then sort by ageInMonths
-
             let output = [];
             sorted.forEach(s => {
                 output = output.concat(_.sortBy(grouped[s], 'ageInMonths').reverse());
             });
+
 
             return {
                 success: true,
@@ -59,8 +64,6 @@ module.exports = {
                 result: output
             };
         } catch (e) {
-            console.log(e);
-            
             return {
                 success: false,
                 error: e
@@ -84,7 +87,7 @@ module.exports = {
             }
 
             // assign ageInMonths and age
-            const mapped = mapWithAge(dogs.body.body);
+            const mapped = _mapDescriptiveFields('dog', dogs.body.body);
             const output = _.sortBy(mapped, 'ageInMonths').reverse();
 
             return {
@@ -118,7 +121,7 @@ module.exports = {
             }
 
             // assign ageInMonths and age
-            const mapped = mapWithAge(hamsters.body.body);
+            const mapped = _mapDescriptiveFields('hamster', hamsters.body.body);
             const output = _.sortBy(mapped, 'ageInMonths');
             
             return {
